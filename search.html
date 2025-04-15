@@ -1,82 +1,61 @@
 {% extends '__layout__.html' %}
-{% block title %}Admin{% endblock %}
+{% block title %}Search Groups{% endblock %}
 {% block head %}
-<link href="/static/css/admin.css" rel="stylesheet"/> <!-- Its just easier to resuse this-->
+<style>
+    .group-bg {
+        background-color: rgb(30,30,30);
+    }
+    .text-secondary {
+        color: rgb(200,200,200) !important;
+    }
+    .bg-drop {
+        box-shadow: 0px 0px 10px 0px rgb(0,0,0,0.5);
+    }
+    h5 {
+        font-size: 15px;
+        margin-bottom: 5px !important;
+    }
+</style>
 {% endblock %}
 {% block content %}
-<div id="main">
-    <div class="container" style="min-width: 1100px;">
-        <a href="/admin" class="btn border-primary btn-sm mb-2">Back to Admin Panel</a>
-        <h1>User Manager</h1>
-        <form method="post">
-            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-            <div class="input-group mb-3">
-                <div class="form-floating" style="width: 52%;">
-                    <input type="text" class="form-control" id="user-search-input" name="user-search-input" value="{%if query != None: %}{{query}}{%endif%}" placeholder="ROBLOX">
-                    <label for="user-search-input">Search</label>
-                </div>
-                <div class="form-floating" style="min-width: 130px;">
-                    <select class="form-select" id="user-search-type" name="user-search-type">
-                        <option value="userid">UserID</option>
-                        <option value="username" {%if searchType == "username"%}selected{%endif%}>Username</option>
-                        <option value="discordid" {%if searchType == "discordid"%}selected{%endif%}>Discord ID</option>
-                    </select>
-                    <label for="user-search-type">Search With</label>
-                </div>
-                <div class="form-floating" style="min-width: 160px;">
-                    <select class="form-select" id="user-order-by" name="user-order-by">
-                        <option value="userid">UserID</option>
-                        <option value="creation" {%if orderBy == "creation"%}selected{%endif%}>Creation Date</option>
-                        <option value="lastonline" {%if orderBy == "lastonline"%}selected{%endif%}>Last Online</option>
-                        <option value="robux" {%if orderBy == "robux"%}selected{%endif%}>Robux Balance</option>
-                        <option value="tix" {%if orderBy == "tix"%}selected{%endif%}>Tickets Balance</option>
-                    </select>
-                    <label for="user-order-by">Order By</label>
-                </div>
-                <div class="form-floating" style="min-width: 130px;">
-                    <select class="form-select" id="user-order-direction" name="user-order-direction">
-                        <option value="asc">Ascending</option>
-                        <option value="desc" {%if orderType == "desc"%}selected{%endif%}>Descending</option>
-                    </select>
-                    <label for="user-order-direction">Order Direction</label>
-                </div>
-                <input type="submit" class="btn btn-outline-primary fw-bold" value="🔍">
+<div class="ms-auto me-auto ps-2 pe-2 mb-3" style="width: 700px;min-height: 100vh;margin-top: 120px;">
+    <h2>Search Groups</h2>
+    <form method="post">
+        <div class="input-group">
+            <div class="form-floating" style="width: 52%;">
+                <input type="text" class="form-control" id="search-input" name="query" {%if query != None: %}value="{{query}}"{%endif%} placeholder="Awesome Group">
+                <label for="search-input">Search</label>
             </div>
-        </form>
-        <table class="table table-dark table-striped">
-            <thead>
-              <tr class="rounded-top">
-                <th scope="col">ID</th>
-                <th scope="col">Username</th>
-                <th scope="col">Created</th>
-                <th scope="col">Last Online</th>
-                <th scope="col">Robux</th>
-                <th scope="col">Tickets</th>
-                <th scope="col">Action</th>
-              </tr>
-            </thead>
-            <tbody class="table-group-divider" style="border-color: rgb(20,20,20);">
-              {% for user in returnList: %}
-                <tr>
-                    <td>{{user.id}}</td>
-                    <td><span class="{% if user.accountstatus == 2%}text-warning{% endif %}{% if user.accountstatus > 2 %}text-danger{%endif%}">{{user.username}}</span></td>
-                    <td>{{user.creation}}</td>
-                    <td>{{user.lastonline}}</td>
-                    <td>{{user.robux}}</td>
-                    <td>{{user.tix}}</td>
-                    <td><a href="/admin/manage-users/{{user.id}}" class="text-decoration-none btn btn-primary btn-sm w-100">View</a></td>
-                </tr>
-              {%endfor%}
-            </tbody>
-          </table>
-          {% if len(returnList) == 0: %}
-            <p class="text-white w-100 text-center">No results found</p>
-          {%endif%}
-          <div class="mt-3 d-flex">
-                <a class="text-decoration-none ms-auto {%if page <= 1: %}disabled text-secondary{%else%}text-primary{%endif%}" {% if page > 1:%}href="/admin/manage-users?searchType={{searchType}}&orderBy={{orderBy}}&page={{page-1}}&orderType={{orderType}}{%if query != None: %}&query={{query}}{%endif%}"{%endif%}>Previous</a>
-                <p class="ms-2 me-2 text-white">Page {{page}}</p>
-                <a class="text-decoration-none me-auto {%if not isThereNextPage: %}disabled text-secondary{%else%}text-primary{%endif%}" {%if isThereNextPage: %}href="/admin/manage-users?searchType={{searchType}}&orderBy={{orderBy}}&page={{page+1}}&orderType={{orderType}}{%if query != None: %}&query={{query}}{%endif%}"{%endif%}>Next</a>
-          </div>
+            <button type="submit" class="btn btn-outline-primary fw-bold" style="min-width: 50px;"><i class="bi bi-search"></i></button>
+        </div>
+    </form>
+    <div class="row mt-2">
+        {% for group in groups %}
+        <div class="col-12 mt-2">
+            <a href="/groups/{{group.id}}/" class="text-decoration-none m-0 p-0">
+                <div style="background-color: rgb(31,31,31);box-shadow: 0px 0px 10px 0px rgb(0,0,0,0.5);overflow: hidden;" class="p-2">
+                    <div class="d-flex">
+                        <img src="/Thumbs/GroupIcon.ashx?x=100&y=100&groupid={{group.id}}" style="aspect-ratio: 1/1;height: 80px !important;" class="rounded border">
+                        <div class="ms-2 flex-fill" style="overflow: hidden;">
+                            <div class="d-flex w-100">
+                                <p class="text-white text-truncate m-0" style="font-size: 17px;">{{group.name}}</p>
+                                <p class="text-secondary m-0 ms-auto" style="font-size: 14px;"><i class="bi bi-people"></i> {{groupservice.GetGroupMemberCount(group.id)}} Members</p>
+                            </div>
+                            <p class="text-secondary m-0 w-100" style="font-size: 14px;">{{group.description}}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {%endfor%}
+    </div>
+    {% if len(groups.items) == 0 %}
+        <p class="mt-5 mb-5 w-100 text-center">No Results Found</p>
+    {%endif%}
+    <div class="d-flex w-100 mt-2" style="font-size: 14px;">
+        <a class="text-decoration-none ms-auto {% if not groups.has_prev: %}text-secondary{%endif%}" {% if groups.has_prev: %}href="/groups/search?page={{groups.prev_num}}{%if query != None %}&query={{query}}{%endif%}"{%endif%}>Previous</a>
+        <p class="m-0 ms-2 me-2 text-white">Page {{groups.page}} of {{groups.pages}}</p>
+        <a class="text-decoration-none me-auto {% if not groups.has_next: %}text-secondary{%endif%}" {% if groups.has_next: %}href="/groups/search?page={{groups.next_num}}{%if query != None %}&query={{query}}{%endif%}"{%endif%}>Next</a>
     </div>
 </div>
 {% endblock %}
